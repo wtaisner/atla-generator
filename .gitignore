@@ -75,3 +75,5 @@ env.bak/
 venv.bak/
 
 .idea/
+
+data/

@@ -1,4 +1,4 @@
-![example workflow](https://github.com/jkarolczak/ligands-classification/actions/workflows/python-app.yml/badge.svg)
+![example workflow](https://github.com/wtaisner/atla-generator/actions/workflows/python-app.yml/badge.svg)
 
 
 # atla-generator

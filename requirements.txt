@@ -1,6 +1,8 @@
 numpy==1.22.4
 matplotlib==3.5.2
-pandas
+pandas~=1.4.2
 streamlit
 scikit-learn==1.1.1
 textblob
+torch~=1.11.0
+transformers~=4.19.2

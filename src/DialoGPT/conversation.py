@@ -9,6 +9,8 @@ def chat_with_me(model: AutoModelForCausalLM, tokenizer: PreTrainedTokenizer, st
     :param tokenizer: tokenizer for given model
     :param steps: the length of the talk (number of phrases we wish to write)
     """
+
+    chat_history_ids = None
     for step in range(steps):
         # encode the new user input, add the eos_token and return a tensor in Pytorch
         new_user_input_ids = tokenizer.encode(input(">> User:") + tokenizer.eos_token, return_tensors='pt')

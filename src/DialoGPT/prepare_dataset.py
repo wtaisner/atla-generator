@@ -1,5 +1,4 @@
 import pandas as pd
-import torch
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizer
 
@@ -28,30 +27,34 @@ def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
     return pd.DataFrame.from_records(context, columns=columns)
 
 
+def flatten(row: list):
+    """
+    flattens 2d list
+    :param row: 2d list
+    :return: flattened list
+    """
+    return [item for sublist in row for item in sublist]
+
+
 class ConversationDataset(Dataset):
     """
     Dataset for DialoGPT
     """
-
-    def __init__(self, df: pd.DataFrame, tokenizer: PreTrainedTokenizer, max_len: int):
+    def __init__(self, df: pd.DataFrame, tokenizer: PreTrainedTokenizer):
         self.tokenizer = tokenizer
-        self.max_len = max_len
-        self.df = []
+        self.examples = []
 
         for _, row in df.iterrows():
-            conv = list(reversed([x for x in row]))
-            self.df.append(conv)
+            conv = self._construct_conv(row)
+            self.examples.append(conv)
+
+    def _construct_conv(self, row: pd.Series):
+        conv = list(reversed([self.tokenizer.encode(x) + [self.tokenizer.eos_token_id] for x in row]))
+        conv = flatten(conv)
+        return conv
 
     def __len__(self):
-        return len(self.df)
+        return len(self.examples)
 
     def __getitem__(self, item):
-        x = self.tokenizer.batch_encode_plus(self.df[item], max_length=self.max_len, padding='max_length',
-                                             return_tensors='pt', truncation=True)
-        x_ids = x['input_ids'].squeeze().to(dtype=torch.long)
-        x_attention = x['attention_mask'].squeeze().to(dtype=torch.long)
-        return {
-            'input_ids': x_ids,
-            'labels': x_ids,
-            'attention_mask': x_attention,
-        }
+        return self.examples[item]

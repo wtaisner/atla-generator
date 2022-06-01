@@ -1,8 +1,7 @@
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from transformers import PreTrainedTokenizer
-from transformers.generation_utils import GenerationMixin
+from transformers import PreTrainedTokenizer, GPT2LMHeadModel
 
 
 def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
@@ -62,7 +61,7 @@ class ConversationDataset(Dataset):
         return self.examples[item]
 
 
-def chat_with_me(model: GenerationMixin, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
+def chat_with_me(model: GPT2LMHeadModel, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
     """
     chatting with trained model
     :param model: trained model

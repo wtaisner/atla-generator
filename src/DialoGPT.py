@@ -1,7 +1,7 @@
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from transformers import PreTrainedTokenizer, AutoModelForCausalLM
+from transformers import PreTrainedTokenizer, PreTrainedModel
 
 
 def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
@@ -61,7 +61,7 @@ class ConversationDataset(Dataset):
         return self.examples[item]
 
 
-def chat_with_me(model: AutoModelForCausalLM, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
+def chat_with_me(model: PreTrainedModel, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
     """
     chatting with trained model
     :param model: trained model
@@ -69,7 +69,7 @@ def chat_with_me(model: AutoModelForCausalLM, tokenizer: PreTrainedTokenizer, st
     :param steps: the length of the talk (number of phrases we wish to write)
     """
 
-    chat_history_ids = None
+    chat_history_ids = torch.zeros(1)
     for step in range(steps):
         # encode the new user input, add the eos_token and return a tensor in Pytorch
         new_user_input_ids = tokenizer.encode(input(">> User:") + tokenizer.eos_token, return_tensors='pt')

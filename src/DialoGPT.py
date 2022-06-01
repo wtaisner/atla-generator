@@ -25,7 +25,7 @@ def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
 
     columns = ['response', 'context']
     columns += [f'context/{i}' for i in range(n - 1)]
-    return pd.DataFrame.from_records(context, columns=columns)
+    return pd.DataFrame.from_records(context, columns=columns)  # type: ignore
 
 
 def flatten(row: list):
@@ -41,6 +41,7 @@ class ConversationDataset(Dataset):
     """
     Dataset for DialoGPT
     """
+
     def __init__(self, df: pd.DataFrame, tokenizer: PreTrainedTokenizer):
         self.tokenizer = tokenizer
         self.examples = []
@@ -86,7 +87,7 @@ def chat_with_me(model: GPT2LMHeadModel, tokenizer: PreTrainedTokenizer, steps: 
             top_k=100,
             top_p=0.7,
             temperature=0.8
-        )
+        )  # type: ignore
 
         # pretty print last output tokens from bot
         print("Bot: {}".format(

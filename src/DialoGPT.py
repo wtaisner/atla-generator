@@ -1,8 +1,9 @@
+from typing import Any
+
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from transformers import PreTrainedTokenizer, GPT2LMHeadModel
-
+from transformers import PreTrainedTokenizer
 
 def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
     """
@@ -62,7 +63,7 @@ class ConversationDataset(Dataset):
         return self.examples[item]
 
 
-def chat_with_me(model: GPT2LMHeadModel, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
+def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
     """
     chatting with trained model
     :param model: trained model

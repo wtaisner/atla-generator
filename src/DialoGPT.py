@@ -66,7 +66,7 @@ class ConversationDataset(Dataset):
 def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
     """
     chatting with trained model
-    :param model: trained model
+    :param model: trained model, in general it should be an object of type GPT2LMHeadModel
     :param tokenizer: tokenizer for given model
     :param steps: the length of the talk (number of phrases we wish to write)
     """

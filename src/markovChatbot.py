@@ -10,7 +10,6 @@ class MarkovChatbot:
     """
     'naive' chatbot based on Markov chains
     """
-
     def __init__(self, corpus: str, n: int = 3):
         corpus = self._preprocess(corpus)
         self.corpus = [x for x in corpus.split(' ') if len(x) > 0]
@@ -61,16 +60,17 @@ class MarkovChatbot:
         return self.ids_ngrams[ngram]
 
     def _find_similar(self, sequence: List[str]) -> str:
-        best_ngram, common = None, 0
+        ngrams_counts = []
         for ngram in self.ngrams_ids.keys():
             c = 0
             ngram_list = ngram.split(" ")
             for word in sequence:
                 if word in ngram_list:
                     c += 1
-            if c > common:
-                best_ngram, common = ngram, c
-        return best_ngram
+            ngrams_counts.append([ngram, c])
+        ngrams_max = max(ngrams_counts, key=lambda x: x[1])[1]
+        ngrams_choice = [ngram for ngram, count in ngrams_counts if count == ngrams_max]
+        return random.choice(ngrams_choice)
 
     def _check_ngram(self, sequence: List[str]) -> str:
         if len(sequence) < self.n:
@@ -128,7 +128,7 @@ class MarkovChatbot:
         self.matrix = self._create_transition_matrix_proba()
 
 
-def chat_with_me(model: MarkovChatbot, steps: int = 5, len_message: int = 15):
+def chat_with_me(model: MarkovChatbot, steps: int = 5, len_message: int = 15) -> None:
     """
     enables chatting with MarkovChatbot
     :param model: chatbot based on Markov chains
@@ -139,3 +139,24 @@ def chat_with_me(model: MarkovChatbot, steps: int = 5, len_message: int = 15):
         inp = input(">>User:")
         response = model.generate_response(inp, len_message)
         print("Bot: {}".format(response))
+
+
+def transform_dialogues(path: str = '../data/dialogues_text.txt', size: int = 5000) -> str:
+    """
+    transforms dialogs from dialogues_text.txt file to a form appropriate for
+    :param path: path to the file
+    :param size: maximal size of the corpus (where size is the number of lines)
+    :return: corpus with given number of lines
+    """
+    text = ''
+    with open(path, 'r') as f:
+        lines = f.readlines()
+    size = min(size, len(lines))
+    for line in lines[:size]:
+        line = line.split('__eou__')
+        line = [x for x in line if (len(x) >= 1 and x != '\n')]
+        line = ' '.join(line)
+        if len(text) > 0:
+            text += " "
+        text += line
+    return text

@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizer
 
+
 def create_context(df: pd.DataFrame, name: str, n: int) -> pd.DataFrame:
     """
     prepares dataset for DialoGPT

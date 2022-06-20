@@ -2,14 +2,15 @@ import random
 import re
 from typing import List, Tuple
 
-from scipy.sparse import coo_matrix
-from sklearn.preprocessing import normalize
+from scipy.sparse import coo_matrix  # type: ignore
+from sklearn.preprocessing import normalize  # type: ignore
 
 
 class MarkovChatbot:
     """
     'naive' chatbot based on Markov chains
     """
+
     def __init__(self, corpus: str, n: int = 3):
         corpus = self._preprocess(corpus)
         self.corpus = [x for x in corpus.split(' ') if len(x) > 0]
@@ -76,8 +77,8 @@ class MarkovChatbot:
         if len(sequence) < self.n:
             ngram = self._find_similar(sequence)
         else:
-            ngram = sequence[-self.n:]
-            ngram = " ".join(ngram)
+            ngram_list = sequence[-self.n:]
+            ngram = " ".join(ngram_list)
             if ngram not in self.ngrams_ids.keys():
                 ngram = self._find_similar(sequence)
         return ngram
@@ -97,9 +98,9 @@ class MarkovChatbot:
         :param length: length of output message
         :return: message, response to user's input
         """
-        sequence = self._preprocess(inp)
-        sequence = [x for x in sequence.split(' ') if len(x) > 0]
-        response = []
+        seq = self._preprocess(inp)
+        sequence = [x for x in seq.split(' ') if len(x) > 0]
+        response: List[str] = []
         response.extend(sequence)
         while len(response) != length + len(sequence):
             word = self._generate_next_word(response)
@@ -113,12 +114,11 @@ class MarkovChatbot:
         :param new_corpus: corpus we want to add to our model
         """
         new_corpus = self._preprocess(new_corpus)
-        new_corpus = [x for x in new_corpus.split(' ') if len(x) > 0]
-        repeats = len(self.corpus) // len(new_corpus) + 5
-
-        to_add = []
+        new_corpus_list = [x for x in new_corpus.split(' ') if len(x) > 0]
+        repeats = len(self.corpus) // len(new_corpus_list) + 5
+        to_add: List[str] = []
         for i in range(repeats):
-            to_add.extend(new_corpus)
+            to_add.extend(new_corpus_list)
 
         self.corpus.extend(to_add)
 
@@ -152,11 +152,11 @@ def transform_dialogues(path: str = '../data/dialogues_text.txt', size: int = 50
     with open(path, 'r') as f:
         lines = f.readlines()
     size = min(size, len(lines))
-    for line in lines[:size]:
-        line = line.split('__eou__')
+    for line_str in lines[:size]:
+        line = line_str.split('__eou__')
         line = [x for x in line if (len(x) >= 1 and x != '\n')]
-        line = ' '.join(line)
+        line_transformed = ' '.join(line)
         if len(text) > 0:
             text += " "
-        text += line
+        text += line_transformed
     return text

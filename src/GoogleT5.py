@@ -9,6 +9,9 @@ from transformers import PreTrainedTokenizer
 
 
 class DatasetT5(Dataset):
+    """
+    Dataset class for GoogleT5 model.
+    """
     def __init__(self, dataset: pd.DataFrame, tokenizer: PreTrainedTokenizer,  source_len: int, target_len: int):
         self.dataset = dataset
         self.tokenizer = tokenizer
@@ -71,6 +74,11 @@ def train(
 ):
     """
     Function to be called for training with the parameters passed from main function
+    :param model: trained model, in general it should be an object of type GPT2LMHeadModel
+    :param tokenizer: tokenizer for given model
+    :param device: device used to store tensors
+    :param loader: dataloader for validation data
+    :param optimizer: optimizer to be used during training
     """
     model.train()
     loss_history = []
@@ -97,9 +105,13 @@ def train(
     print(f"Training loss: {np.mean(loss_history)}")
 
 
-def validate(tokenizer, model, device, loader):
+def validate(tokenizer: PreTrainedTokenizer, model: Any, device: torch.device, loader: DataLoader):
     """
     Function to evaluate model for predictions
+    :param model: trained model, in general it should be an object of type GPT2LMHeadModel
+    :param tokenizer: tokenizer for given model
+    :param device: device used to store tensors
+    :param loader: dataloader for validation data
     """
     model.eval()
     contexts = []
@@ -129,3 +141,39 @@ def validate(tokenizer, model, device, loader):
     return contexts, predictions, actuals
 
 
+def chat(user_input: str, model: Any, tokenizer: PreTrainedTokenizer, prefix: str, source_len: int = 256,
+         output_len: int = 128) -> str:
+    """
+    Function to generate answers from the model
+    :param user_input: text input by the user
+    :param model: trained model, in general it should be an object of type T5ForConditionalGeneration
+    :param tokenizer: tokenizer for given model
+    :param prefix: prefix used to preceed the user input
+    :param source_len: maximal number of tokens in the input
+    :param output_len: maximal number of tokens in the output
+    :return string, models response to user's input
+    """
+    prefixed_input = prefix + str(user_input)
+    prefixed_input = " ".join(prefixed_input.split())
+
+    tokenized_input = tokenizer.batch_encode_plus(
+        [prefixed_input],
+        max_length=source_len,
+        pad_to_max_length=True,
+        truncation=True,
+        padding="max_length",
+        return_tensors="pt",
+        return_attention_mask=False
+    )
+
+    with torch.no_grad():
+        model.eval()
+        tokenized_output = model.generate(
+            input_ids=tokenized_input['input_ids'],
+            max_length=128,
+            num_beams=2,
+            repetition_penalty=2.5
+        )
+
+    text_output = tokenizer.decode(tokenized_output[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+    return text_output

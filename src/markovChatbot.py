@@ -70,7 +70,7 @@ class MarkovChatbot:
                     c += 1
             ngrams_counts.append([ngram, c])
         ngrams_max = max(ngrams_counts, key=lambda x: x[1])[1]
-        ngrams_choice = [ngram for ngram, count in ngrams_counts if count == ngrams_max]
+        ngrams_choice = [ngram for ngram, count in ngrams_counts if ngrams_max - count < 3]
         return random.choice(ngrams_choice)
 
     def _check_ngram(self, sequence: List[str]) -> str:

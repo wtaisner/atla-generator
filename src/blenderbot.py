@@ -47,34 +47,60 @@ class CustomDataset(Dataset):
         }
 
 
-def chat_with_me(model: Any, tokenizer: BlenderbotSmallTokenizer, src_len: int = 512, steps: int = 5) -> None:
+def chat_with_me(model: Any, tokenizer: BlenderbotSmallTokenizer, src_len: int = 512, steps: int = None) -> None:
     """
     chatting with trained model
     :param model: trained model
     :param tokenizer: tokenizer for given model
     :param src_len: minimal length of the source message (if longer - truncate)
-    :param steps: the length of the talk (number of phrases we wish to write)
+    :param steps: the length of the talk (number of phrases we wish to write) (optional)
     """
+    if steps is None:
+        print('to quit write "quit"')
+        while True:
+            # encode the new user input, add the eos_token and return a tensor in Pytorch
+            user_input = input(">>User: ")
+            if user_input == 'quit':
+                break
+            data = tokenizer.batch_encode_plus([user_input], max_length=src_len, padding='max_length',
+                                               return_tensors='pt', truncation=True)
 
-    for step in range(steps):
-        # encode the new user input, add the eos_token and return a tensor in Pytorch
-        user_input = input(">>User: ")
-        data = tokenizer.batch_encode_plus([user_input], max_length=src_len, padding='max_length',
-                                           return_tensors='pt', truncation=True)
+            ids = data['input_ids']
+            mask = data['attention_mask']
+            # generated a response while limiting the total chat history to 100 tokens,
+            generated_ids = model.generate(
+                input_ids=ids,
+                attention_mask=mask,
+                max_length=100,
+                num_beams=2,
+                repetition_penalty=2.5,
+                length_penalty=1.0,
+                early_stopping=True
+            )
 
-        ids = data['input_ids']
-        mask = data['attention_mask']
-        # generated a response while limiting the total chat history to 100 tokens,
-        generated_ids = model.generate(
-            input_ids=ids,
-            attention_mask=mask,
-            max_length=100,
-            num_beams=2,
-            repetition_penalty=2.5,
-            length_penalty=1.0,
-            early_stopping=True
-        )
+            text = [tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids][0]
+            # pretty print last output tokens from bot
+            print("Bot: {}".format(text))
+    else:
+        for step in range(steps):
+            # encode the new user input, add the eos_token and return a tensor in Pytorch
+            user_input = input(">>User: ")
+            data = tokenizer.batch_encode_plus([user_input], max_length=src_len, padding='max_length',
+                                               return_tensors='pt', truncation=True)
 
-        text = [tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids][0]
-        # pretty print last output tokens from bot
-        print("Bot: {}".format(text))
+            ids = data['input_ids']
+            mask = data['attention_mask']
+            # generated a response while limiting the total chat history to 100 tokens,
+            generated_ids = model.generate(
+                input_ids=ids,
+                attention_mask=mask,
+                max_length=100,
+                num_beams=2,
+                repetition_penalty=2.5,
+                length_penalty=1.0,
+                early_stopping=True
+            )
+
+            text = [tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids][0]
+            # pretty print last output tokens from bot
+            print("Bot: {}".format(text))

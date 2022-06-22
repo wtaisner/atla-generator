@@ -179,7 +179,7 @@ def chat(user_input: str, model: Any, tokenizer: PreTrainedTokenizer, prefix: st
     return text_output
 
 
-def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
+def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = None) -> None:
     """
     chatting with trained model
     :param model: trained model, in general it should be an object of type GPT2LMHeadModel
@@ -191,14 +191,18 @@ def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> 
     MAX_SOURCE_TEXT_LENGTH = 256
     MAX_TARGET_TEXT_LENGTH = 128
 
-    should_continue = True
     step_no = 0
+    if steps is None:
+        print("write 'quit' to quit early")
 
-    print("Uncle Iroh dialogue bot (write 'quit' to quit early)\n")
-
-    while step_no < steps:
-        user_input = input("USER: ")
-        if user_input == 'quit':
-            break
-        model_output = chat(user_input, model, tokenizer, PREFIX, MAX_SOURCE_TEXT_LENGTH, MAX_TARGET_TEXT_LENGTH)
-        print("IROH: {}".format(model_output))
+        while True:
+            user_input = input("USER: ")
+            if user_input == 'quit':
+                break
+            model_output = chat(user_input, model, tokenizer, PREFIX, MAX_SOURCE_TEXT_LENGTH, MAX_TARGET_TEXT_LENGTH)
+            print("Bot: {}".format(model_output))
+    else:
+        for step in range(steps):
+            user_input = input("USER: ")
+            model_output = chat(user_input, model, tokenizer, PREFIX, MAX_SOURCE_TEXT_LENGTH, MAX_TARGET_TEXT_LENGTH)
+            print("Bot: {}".format(model_output))

@@ -128,17 +128,26 @@ class MarkovChatbot:
         self.matrix = self._create_transition_matrix_proba()
 
 
-def chat_with_me(model: MarkovChatbot, steps: int = 5, len_message: int = 15) -> None:
+def chat_with_me(model: MarkovChatbot, steps: int = None, len_message: int = 15) -> None:
     """
     enables chatting with MarkovChatbot
     :param model: chatbot based on Markov chains
     :param steps: number of iterations we wish to talk
     :param len_message: length of the model's response
     """
-    for step in range(steps):
-        inp = input(">>User:")
-        response = model.generate_response(inp, len_message)
-        print("Bot: {}".format(response))
+    if steps is None:
+        print('to quit write "quit"')
+        while True:
+            inp = input(">>User:")
+            if inp == 'quit':
+                break
+            response = model.generate_response(inp, len_message)
+            print("Bot: {}".format(response))
+    else:
+        for step in range(steps):
+            inp = input(">>User:")
+            response = model.generate_response(inp, len_message)
+            print("Bot: {}".format(response))
 
 
 def transform_dialogues(path: str = '../data/dialogues_text.txt', size: int = 5000) -> str:

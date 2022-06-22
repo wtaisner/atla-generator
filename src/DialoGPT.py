@@ -64,7 +64,7 @@ class ConversationDataset(Dataset):
         return self.examples[item]
 
 
-def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> None:
+def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = None) -> None:
     """
     chatting with trained model
     :param model: trained model, in general it should be an object of type GPT2LMHeadModel
@@ -73,24 +73,56 @@ def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = 5) -> 
     """
 
     chat_history_ids = torch.zeros(1)
-    for step in range(steps):
-        # encode the new user input, add the eos_token and return a tensor in Pytorch
-        new_user_input_ids = tokenizer.encode(input(">> User:") + tokenizer.eos_token, return_tensors='pt')
+    if steps is None:
+        step = 0
+        print('to quit write "quit"')
+        while True:
+            # encode the new user input, add the eos_token and return a tensor in Pytorch
+            user_input = input(">> User: ")
+            if user_input == 'quit':
+                break
+            new_user_input_ids = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors='pt')
 
-        # append the new user input tokens to the chat history
-        bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1) if step > 0 else new_user_input_ids
+            # append the new user input tokens to the chat history
+            bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids],
+                                      dim=-1) if step > 0 else new_user_input_ids
 
-        # generated a response while limiting the total chat history to 1000 tokens,
-        chat_history_ids = model.generate(
-            bot_input_ids, max_length=200,
-            pad_token_id=tokenizer.eos_token_id,
-            no_repeat_ngram_size=3,
-            do_sample=True,
-            top_k=100,
-            top_p=0.7,
-            temperature=0.8
-        )  # type: ignore
+            # generated a response while limiting the total chat history to 1000 tokens,
+            chat_history_ids = model.generate(
+                bot_input_ids, max_length=200,
+                pad_token_id=tokenizer.eos_token_id,
+                no_repeat_ngram_size=3,
+                do_sample=True,
+                top_k=100,
+                top_p=0.7,
+                temperature=0.8
+            )  # type: ignore
 
-        # pretty print last output tokens from bot
-        print("Bot: {}".format(
-            tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)))
+            # pretty print last output tokens from bot
+            step += 1
+            print("Bot: {}".format(
+                tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)))
+
+    else:
+        for step in range(steps):
+            # encode the new user input, add the eos_token and return a tensor in Pytorch
+            new_user_input_ids = tokenizer.encode(input(">> User:") + tokenizer.eos_token, return_tensors='pt')
+
+            # append the new user input tokens to the chat history
+            bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids],
+                                      dim=-1) if step > 0 else new_user_input_ids
+
+            # generated a response while limiting the total chat history to 1000 tokens,
+            chat_history_ids = model.generate(
+                bot_input_ids, max_length=200,
+                pad_token_id=tokenizer.eos_token_id,
+                no_repeat_ngram_size=3,
+                do_sample=True,
+                top_k=100,
+                top_p=0.7,
+                temperature=0.8
+            )  # type: ignore
+
+            # pretty print last output tokens from bot
+            print("Bot: {}".format(
+                tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)))

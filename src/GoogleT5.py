@@ -53,15 +53,15 @@ class DatasetT5(Dataset):
         )
 
         source_ids = source["input_ids"].squeeze()
-        #source_mask = source["attention_mask"].squeeze()
+        # source_mask = source["attention_mask"].squeeze()
         target_ids = target["input_ids"].squeeze()
-        #target_mask = target["attention_mask"].squeeze()
+        # target_mask = target["attention_mask"].squeeze()
 
         return {
             "source_ids": source_ids.to(dtype=torch.long),
-            #"source_mask": source_mask.to(dtype=torch.long),
+            # "source_mask": source_mask.to(dtype=torch.long),
             "target_ids": target_ids.to(dtype=torch.long),
-            #"target_mask": target_mask.to(dtype=torch.long)
+            # "target_mask": target_mask.to(dtype=torch.long)
         }
 
 
@@ -84,14 +84,14 @@ def train(
     loss_history = []
     for _, data in enumerate(loader, 0):
         y = data["target_ids"].to(device, dtype=torch.long)
-        #lm_labels = y[:, 1:].clone().detach()
-        #lm_labels[y[:, 1:] == tokenizer.pad_token_id] = -100
+        # lm_labels = y[:, 1:].clone().detach()
+        # lm_labels[y[:, 1:] == tokenizer.pad_token_id] = -100
         ids = data["source_ids"].to(device, dtype=torch.long)
-        #mask = data["source_mask"].to(device, dtype=torch.long)
+        # mask = data["source_mask"].to(device, dtype=torch.long)
 
         outputs = model(
             input_ids=ids,
-            #attention_mask=mask,
+            # attention_mask=mask,
             labels=y
         )
 
@@ -121,12 +121,12 @@ def validate(tokenizer: PreTrainedTokenizer, model: Any, device: torch.device, l
         for _, data in enumerate(loader, 0):
             ids = data['source_ids'].to(device, dtype=torch.long)
             y = data['target_ids'].to(device, dtype=torch.long)
-            #mask = data["source_mask"].to(device, dtype=torch.long)
+            # mask = data["source_mask"].to(device, dtype=torch.long)
 
             generated_ids = model.generate(
                 input_ids=ids,
                 max_length=128,
-                #attention_mask=mask,
+                # attention_mask=mask,
                 num_beams=2,
                 repetition_penalty=2.5
                 )
@@ -191,7 +191,6 @@ def chat_with_me(model: Any, tokenizer: PreTrainedTokenizer, steps: int = None) 
     MAX_SOURCE_TEXT_LENGTH = 256
     MAX_TARGET_TEXT_LENGTH = 128
 
-    step_no = 0
     if steps is None:
         print("write 'quit' to quit early")
 
